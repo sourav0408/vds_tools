@@ -40,8 +40,8 @@ import static org.bouncycastle.cms.RecipientId.password;
 public class VdsController {
 
     @GetMapping("/vds")// This maps the form to the /show-form URL
-    public String showForm(Model model) {
-        model.addAttribute("VdsFormModel", new VdsFormModel()); // Add an empty form model
+    public String showForm() {
+        //model.addAttribute("VdsFormModel", new VdsFormModel()); // Add an empty form model
         return "vdsForm";
     }
 
