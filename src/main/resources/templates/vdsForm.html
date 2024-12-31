@@ -53,6 +53,20 @@
       <div class="col-md-8">
         <form id="myForm" class="form-horizontal">
           <div class="row">
+            <div class="mb-3 d-flex align-items-center" style="padding-bottom: 8px">
+              <label for="vdsType" class="form-label me-3" style="width: 150px;">VDS Type</label>
+              <select class="form-select flex-grow-1" id="vdsType" name="vdsType" required>
+                <option selected disabled>Choose an option</option>
+                <option value="UNIVERSITY_CERTIFICATE">UNIVERSITY_CERTIFICATE</option>
+              </select>
+            </div>
+            <div class="mb-3 d-flex align-items-center" style="padding-bottom: 8px">
+              <label for="university" class="form-label me-3" style="width: 150px;">University</label>
+              <select class="form-select flex-grow-1" id="university" name="university" required>
+                <option selected disabled>Choose an option</option>
+                <option value="SUST">SUST</option>
+              </select>
+            </div>
             <!-- Text Fields -->
             <div class="mb-3 d-flex align-items-center" style="padding-bottom: 8px">
               <label for="firstName" class="form-label me-3" style="width: 150px;">First Name</label>
@@ -64,7 +78,8 @@
             </div>
             <div class="mb-3 d-flex align-items-center" style="padding-bottom: 8px">
               <label for="id" class="form-label me-3" style="width: 150px;">Student ID</label>
-              <input type="text" class="form-control flex-grow-1" id="id" name="id" placeholder="Enter Student ID here" required>
+              <input type="text" class="form-control flex-grow-1" id="id" name="id" oninput="validateStudentID()"
+                     placeholder="Please enter a 10-digit Student ID here" required>
             </div>
 
             <!-- Date Fields -->
@@ -85,13 +100,7 @@
                 <option value="32">32</option>
               </select>
             </div>
-            <div class="mb-3 d-flex align-items-center" style="padding-bottom: 8px">
-              <label for="university" class="form-label me-3" style="width: 150px;">University</label>
-              <select class="form-select flex-grow-1" id="university" name="university" required>
-                <option selected disabled>Choose an option</option>
-                <option value="SUST">SUST</option>
-              </select>
-            </div>
+
             <div class="mb-3 d-flex align-items-center" style="padding-bottom: 8px">
               <label for="division" class="form-label me-3" style="width: 150px;">Division</label>
               <select class="form-select flex-grow-1" id="division" name="division" required>
@@ -99,13 +108,7 @@
                 <option value="Sylhet">Sylhet</option>
               </select>
             </div>
-            <div class="mb-3 d-flex align-items-center" style="padding-bottom: 8px">
-              <label for="vdsType" class="form-label me-3" style="width: 150px;">VDS Type</label>
-              <select class="form-select flex-grow-1" id="vdsType" name="vdsType" required>
-                <option selected disabled>Choose an option</option>
-                <option value="UNIVERSITY_CERTIFICATE">UNIVERSITY_CERTIFICATE</option>
-              </select>
-            </div>
+
             <div class="mb-3 d-flex align-items-center" style="padding-bottom: 8px">
               <label for="issuingCountry" class="form-label me-3" style="width: 150px;">Issuing Country</label>
               <select class="form-select flex-grow-1" id="issuingCountry" name="issuingCountry" required>
@@ -118,6 +121,14 @@
               <select class="form-select flex-grow-1" id="signerIdentifier" name="signerIdentifier" required>
                 <option selected disabled>Choose an option</option>
                 <option value="DETS">DETS</option>
+              </select>
+            </div>
+            <div class="mb-3 d-flex align-items-center" style="padding-bottom: 8px">
+              <label for="signingCertificate" class="form-label me-3" style="width: 150px;">Signing Certificate</label>
+              <select class="form-select flex-grow-1" id="signingCertificate" name="signingCertificate" required>
+                <option selected disabled>Choose an option</option>
+                <option value="UTTS5B">UTTS5B</option>
+                <option value="UTTS5C">UTTS5C</option>
               </select>
             </div>
           </div>
@@ -154,6 +165,7 @@
 
         const formData = {
           firstName: $('#firstName').val(),
+          signingCertificate:$('#signingCertificate').val(),
           cgpa: $('#cgpa').val(),
           id: $('#id').val(),
           sigDate: $('#sigDate').val(),
@@ -185,6 +197,8 @@
         });
       });
     });
+
+
   </script>
 </body>
 </html>

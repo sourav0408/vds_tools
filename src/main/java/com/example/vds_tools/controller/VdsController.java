@@ -22,8 +22,10 @@ import org.springframework.http.ResponseEntity;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import java.io.FileInputStream;
+import java.io.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLEncoder;
 import java.nio.file.Path;
 import java.security.KeyStore;
 import java.security.PrivateKey;
@@ -53,6 +55,7 @@ public class VdsController {
         System.out.println("hello" + formData);
 
         String firstName=formData.getFirstName() ;
+        String signingCertificate=formData.getSigningCertificate();
         String cgpa=formData.getCgpa() ;
         String university=formData.getUniversity() ;
         String division=formData.getDivision() ;
@@ -65,7 +68,7 @@ public class VdsController {
         String issuingDate=formData.getIssuingDate() ;
         String sigDate=formData.getSigDate() ;
 
-        byte[] qr=generateDigitalSeal(firstName,cgpa,
+        byte[] qr=generateDigitalSeal(firstName,cgpa,signingCertificate,
                 university,division,id,vdsType,issuingCountry,
                 signerIdentifier,certificateReference,issuingDate,sigDate);
 
@@ -120,6 +123,7 @@ public class VdsController {
     public byte[] generateDigitalSeal(
             String firstName_,
             String cgpa_,
+            String signingCertificate_,
             String university_,
             String division_,
             String id_,
@@ -134,13 +138,47 @@ public class VdsController {
         HttpHeaders headers = null;
         try {
             String password_ = "bccca";
-            FileInputStream fis = new FileInputStream("D:\\D\\all_project\\VDS\\Certificate\\ahad_cert.p12");
 
 
+            //String fileId= "1vsB9rL16wRSCPw3t2iIo98tawqzbFtzH";
+            /*String fileId="19AwvADPbXw8Lx5cK7rmKg3vQmNN3Gdhw";
 
+            String fileUrl = "https://drive.google.com/uc?id=" + fileId + "&export=download";
+            String tinyUrl = createTinyURL(fileUrl);
+
+            System.out.println("Original URL: " + fileUrl);
+            System.out.println("Tiny URL: " + tinyUrl);*/
+
+
+            // Open a connection to the URL
+            //URL url = new URL(tinyUrl);
+
+         String urL;
+            if(signingCertificate_.equals("UTTS5B")){
+
+                urL="https://tinyurl.com/29uya6wk";
+            } else if (signingCertificate_.equals("UTTS5C")) {
+                urL="https://tinyurl.com/29uya6wk";
+            }
+
+            else {
+                // Provide a default initialization
+                throw new IllegalArgumentException("Invalid signingCertificate_: " + signingCertificate_);
+            }
+            URL url = new URL(urL);
+
+            //FileInputStream fis = new FileInputStream("");
+            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod("GET");
+
+            // Set the necessary headers if needed
+            connection.setRequestProperty("User-Agent", "Mozilla/5.0");
+            InputStream fis = connection.getInputStream();
             KeyStore keyStore = KeyStore.getInstance("PKCS12");
             keyStore.load(fis, password_.toCharArray());
             Enumeration<String> aliases = keyStore.aliases();
+
+
 
             while (aliases.hasMoreElements()) {
                 String alias = aliases.nextElement();
@@ -158,6 +196,7 @@ public class VdsController {
                 String firstName = firstName_;
                 String cgpa = cgpa_;
                 String link = "https://tinyurl.com/f475a4x4";
+               // String link ="https://tinyurl.com/2akr5d5s";
                 String university = university_;
                 String division = division_;
                 String id = id_;
@@ -216,6 +255,7 @@ public class VdsController {
         private String university ;
         private String division ;
         private String id ;
+        private String signingCertificate;
 
         private String vdsType;
         private String issuingCountry;
@@ -240,5 +280,24 @@ public class VdsController {
         public void setField2(String field2) {
             this.field2 = field2;
         }*/
+    }
+    public static String createTinyURL(String originalUrl) throws IOException {
+        String tinyURLAPI = "http://tinyurl.com/api-create.php?url=";
+        // Encode the original URL to handle special characters
+        String encodedUrl = URLEncoder.encode(originalUrl, "UTF-8");
+
+        // Combine the TinyURL API with the encoded original URL
+        URL url = new URL(tinyURLAPI + encodedUrl);
+
+        // Open a connection to the TinyURL API
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+
+        // Get the Tiny URL from the response
+        BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+        String tinyUrl = reader.readLine(); // Read the response
+
+        reader.close();
+        return tinyUrl; // Return the shortened Tiny URL
     }
 }
