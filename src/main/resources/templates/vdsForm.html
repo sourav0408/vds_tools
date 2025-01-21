@@ -6,12 +6,106 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    /* Basic popup styles */
+    #popup {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: #ffffff; /* White background */
+      border: 2px solid #a6cdf1; /* Subtle border */
+      padding: 20px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2); /* Enhanced shadow */
+      width: 400px;
+      border-radius: 10px; /* Softer corners */
+      z-index: 9999;
+      font-family: Arial, sans-serif;
+    }
+
+    /* Popup header */
+    .popup-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .popup-header h3 {
+      font-size: 20px;
+      color: #333;
+      margin: 0;
+    }
+
+    .close-btn {
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-size: 20px;
+      color: #555;
+      transition: color 0.3s;
+    }
+
+    .close-btn:hover {
+      color: #007BFF;
+    }
+
+    /* Popup content */
+    .popup-content {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .popup-content label {
+      font-size: 14px;
+      color: #333;
+      font-weight: bold;
+    }
+
+    .popup-content input[type="password"] {
+      padding: 10px;
+      font-size: 16px;
+      border: 2px solid #ddd;
+      border-radius: 5px;
+      width: 100%;
+    }
+
+    .popup-content button {
+      padding: 12px;
+      font-size: 16px;
+      background-color: #007BFF;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+    }
+
+
+    .popup-content button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+
   <style>
     body {
       background-color: #E7E9EB;
     }
     #mainDiv {
-      padding: 30px;
+      padding: 10px;
       background-color: #FFFFFF;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
       border-radius: 8px;
@@ -53,92 +147,115 @@
       <div class="col-md-8">
         <form id="myForm" class="form-horizontal">
           <div class="row">
-            <div class="mb-3 d-flex align-items-center" style="padding-bottom: 8px">
+            <div class="mb-3 d-flex align-items-center" style="padding-bottom: 0px">
               <label for="vdsType" class="form-label me-3" style="width: 150px;">VDS Type</label>
               <select class="form-select flex-grow-1" id="vdsType" name="vdsType" required>
-                <option selected disabled>Choose an option</option>
+                <option selected disabled>Choose VDS Type</option>
                 <option value="UNIVERSITY_CERTIFICATE">UNIVERSITY_CERTIFICATE</option>
               </select>
             </div>
-            <div class="mb-3 d-flex align-items-center" style="padding-bottom: 8px">
+            <div class="mb-3 d-flex align-items-center" style="padding-bottom: 0px">
               <label for="university" class="form-label me-3" style="width: 150px;">University</label>
               <select class="form-select flex-grow-1" id="university" name="university" required>
-                <option selected disabled>Choose an option</option>
+                <option selected disabled>Choose University</option>
                 <option value="SUST">SUST</option>
               </select>
             </div>
             <!-- Text Fields -->
-            <div class="mb-3 d-flex align-items-center" style="padding-bottom: 8px">
+            <div class="mb-3 d-flex align-items-center" style="padding-bottom: 0px">
               <label for="firstName" class="form-label me-3" style="width: 150px;">First Name</label>
               <input type="text" class="form-control flex-grow-1" id="firstName" name="firstName" placeholder="Enter Name here" required>
             </div>
-            <div class="mb-3 d-flex align-items-center" style="padding-bottom: 8px">
+            <div class="mb-3 d-flex align-items-center" style="padding-bottom: 0px">
               <label for="cgpa" class="form-label me-3" style="width: 150px;">CGPA</label>
               <input type="text" class="form-control flex-grow-1" id="cgpa" name="cgpa" placeholder="Enter CGPA here" required>
             </div>
-            <div class="mb-3 d-flex align-items-center" style="padding-bottom: 8px">
+            <div class="mb-3 d-flex align-items-center" style="padding-bottom: 0px">
               <label for="id" class="form-label me-3" style="width: 150px;">Student ID</label>
-              <input type="text" class="form-control flex-grow-1" id="id" name="id" oninput="validateStudentID()"
+              <input type="text" class="form-control flex-grow-1" id="id" name="id"
                      placeholder="Please enter a 10-digit Student ID here" required>
             </div>
 
             <!-- Date Fields -->
-            <div class="mb-3 d-flex align-items-center"style="padding-bottom: 8px">
+            <div class="mb-3 d-flex align-items-center"style="padding-bottom: 0px">
               <label for="sigDate" class="form-label me-3" style="width: 150px;">Signature Date</label>
               <input type="date" class="form-control flex-grow-1" id="sigDate" name="sigDate" required>
             </div>
-            <div class="mb-3 d-flex align-items-center" style="padding-bottom: 8px">
+            <div class="mb-3 d-flex align-items-center" style="padding-bottom: 0px">
               <label for="issuingDate" class="form-label me-3" style="width: 150px;">Issuing Date</label>
               <input type="date" class="form-control flex-grow-1" id="issuingDate" name="issuingDate" required>
             </div>
 
             <!-- Select Fields -->
-            <div class="mb-3 d-flex align-items-center" style="padding-bottom: 8px">
+            <div class="mb-3 d-flex align-items-center" style="padding-bottom: 0px">
               <label for="certificateReference" class="form-label me-3" style="width: 150px;">Certificate Reference</label>
               <select class="form-select flex-grow-1" id="certificateReference" name="certificateReference" required>
-                <option selected disabled>Choose an option</option>
+                <option selected disabled>Choose Certificate Reference</option>
                 <option value="32">32</option>
               </select>
             </div>
 
-            <div class="mb-3 d-flex align-items-center" style="padding-bottom: 8px">
+            <div class="mb-3 d-flex align-items-center" style="padding-bottom: 0px">
               <label for="division" class="form-label me-3" style="width: 150px;">Division</label>
               <select class="form-select flex-grow-1" id="division" name="division" required>
-                <option selected disabled>Choose an option</option>
+                <option selected disabled>Choose Division</option>
                 <option value="Sylhet">Sylhet</option>
               </select>
             </div>
 
-            <div class="mb-3 d-flex align-items-center" style="padding-bottom: 8px">
+            <div class="mb-3 d-flex align-items-center" style="padding-bottom: 0px">
               <label for="issuingCountry" class="form-label me-3" style="width: 150px;">Issuing Country</label>
               <select class="form-select flex-grow-1" id="issuingCountry" name="issuingCountry" required>
-                <option selected disabled>Choose an option</option>
+                <option selected disabled>Choose Issuing Country</option>
                 <option value="BGD">BGD</option>
               </select>
             </div>
-            <div class="mb-3 d-flex align-items-center" style="padding-bottom: 8px">
+            <div class="mb-3 d-flex align-items-center" style="padding-bottom: 0px">
               <label for="signerIdentifier" class="form-label me-3" style="width: 150px;">Signer Identifier</label>
               <select class="form-select flex-grow-1" id="signerIdentifier" name="signerIdentifier" required>
-                <option selected disabled>Choose an option</option>
+                <option selected disabled>Choose Signer Identifier</option>
                 <option value="DETS">DETS</option>
               </select>
             </div>
-            <div class="mb-3 d-flex align-items-center" style="padding-bottom: 8px">
-              <label for="signingCertificate" class="form-label me-3" style="width: 150px;">Signing Certificate</label>
-              <select class="form-select flex-grow-1" id="signingCertificate" name="signingCertificate" required>
-                <option selected disabled>Choose an option</option>
-                <option value="UTTS5B">UTTS5B</option>
-                <option value="UTTS5C">UTTS5C</option>
+            <div class="mb-3 d-flex align-items-center" >
+              <label for="keyStoreIdentifier" class="form-label me-3" style="width: 150px;">Keystore Identifier</label>
+              <select class="form-select flex-grow-1" id="keyStoreIdentifier" name="keyStoreIdentifier" required>
+                <option selected disabled>Choose Keystore Identifier</option>
+                <option value="WINDOWS">WINDOWS</option>
+                <option value="DONGLE">DONGLE</option>
               </select>
             </div>
+            <div class="mb-3 d-flex align-items-center" >
+              <label for="signingCertificate" class="form-label me-3" style="width: 150px;">Signing Certificate</label>
+              <select class="form-select flex-grow-1" id="signingCertificate" name="signingCertificate" required>
+                <option selected disabled>Choose Signing Certificate</option>
+                <!-- Iterate over the aliaseS list and use alias.alias for value and display text -->
+                <option th:each="alias : ${aliaseS}" th:value="${alias.alias}" th:text="${alias.alias}"></option>
+              </select>
+
+            </div>
           </div>
+
+          <input type="hidden" id="passwordField" name="passwordField">
         </form>
+        <div id="popup">
+          <div class="popup-header">
+            <h3>Enter Password:</h3>
+            <span class="close-btn" onclick="closePopup()">&times;</span>
+          </div>
+          <div class="popup-content">
+            <label for="password"></label>
+            <input type="password" id="password" placeholder="Enter your password">
+            <button onclick="submitPassword()">Submit</button>
+          </div>
+        </div>
       </div>
 
 
       <!-- Right Column: QR Code and Button -->
       <div class="col-md-4">
         <!-- QR Code Image -->
+        <label for="qrString" class="form-label" style="text-align: center"> QR Code </label>
         <div class="mb-3 text-center">
           <img th:src="@{/qr.png}" alt="Display Image" class="img-fluid" id="qrCodeImage" >
         </div>
@@ -146,7 +263,6 @@
         <div class="mb-3">
           <label for="qrString" class="form-label">QR Code String</label>
           <textarea class="form-control" id="qrString" rows="5" placeholder="QR String will appear here" readonly ></textarea>
-
         </div>
         <button type="submit" class="btn btn-primary w-100" id="submitBtn">Submit</button>
         <!-- Submit Button -->
@@ -175,7 +291,9 @@
           division: $('#division').val(),
           vdsType: $('#vdsType').val(),
           issuingCountry: $('#issuingCountry').val(),
-          signerIdentifier: $('#signerIdentifier').val()
+          keyStoreIdentifier:$('#keyStoreIdentifier').val(),
+          signerIdentifier: $('#signerIdentifier').val(),
+          storedPassword:$('#passwordField').val()
         };
 
         $.ajax({
@@ -197,8 +315,138 @@
         });
       });
     });
+//the change certificate list
+   $(document).ready(function () {
+      $('#keyStoreIdentifier').on('change', function () {
+        const keyStoreValue = $(this).val();
+        const signingCertificateDropdown = $('#signingCertificate');
+
+        // Clear the Signing Certificate dropdown
+        signingCertificateDropdown.empty();
+        signingCertificateDropdown.append('<option selected disabled>Choose Signing Certificate</option>');
+        if(keyStoreValue==='WINDOWS')
+        if (keyStoreValue) {
+          $.ajax({
+            url: `/api/certificates/${keyStoreValue}`, // Endpoint to fetch certificate options
+            method: 'GET',
+            success: function (data) {
+              // Populate the dropdown with new options
+              data.forEach(cert => {
+                signingCertificateDropdown.append(
+                        `<option value="${cert.certificateActualName}">${cert.alias}</option>`
+                );
+              });
+            },
+            error: function (err) {
+              console.error('Error fetching certificates:', err);
+            }
+          });
+        }
+      });
+    });
+
+
+
+
+
+
+
 
 
   </script>
+
+<script>
+  const selectMenu = document.getElementById('keyStoreIdentifier');
+  const popup = document.getElementById('popup');
+  const selectedOption = document.getElementById('selectedOption');
+  const passwordInput = document.getElementById('password');
+
+  selectMenu.addEventListener('change', function() {
+    if (this.value === 'DONGLE') {  // Only show the popup if "DONGLE" is selected
+     // selectedOption.textContent = this.options[this.selectedIndex].text;
+      popup.style.display = 'block';
+    } else {
+      popup.style.display = 'none';
+    }
+  });
+
+  function submitPassword() {
+    const password = passwordInput.value;
+    if (password) {
+      // Send the password to the Spring Boot backend
+      fetch('http://localhost:8080/api/submitPassword2', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ password: password }) // Sending the password as JSON
+      })
+              .then(response => response.json())
+              .then(data => {
+                if (data.success) {
+                  setPassword(password);
+                  alert('Password is correct!');
+                  const dongle = "DONGLE";
+                  initializeKeyStoreDropdown(dongle);
+                  popup.style.display = 'none';  // Close the popup after submission
+                } else {
+                  alert('Password is incorrect!');
+                }
+              })
+              .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while submitting the password.');
+              });
+    } else {
+      alert('Please enter a password!');
+    }
+  }
+
+  // Close the popup if the user clicks outside of it
+  window.addEventListener('click', function(event) {
+    if (event.target === popup) {
+      popup.style.display = 'none';
+    }
+  });
+  ///for close popup
+  function closePopup() {
+/*    const selectField = document.getElementById('signingCertificate');
+    selectField.selectedIndex = -1;*/
+    document.getElementById('popup').style.display = 'none';
+  }
+
+  // Function to populate the dropdown based on the keyStoreIdentifier
+  function initializeKeyStoreDropdown(keyStoreValue) {
+    const signingCertificateDropdown = $('#signingCertificate');
+
+    // Clear the Signing Certificate dropdown
+
+    signingCertificateDropdown.empty();
+    signingCertificateDropdown.append('<option selected disabled>Choose Signing Certificate</option>');
+    //alert(`Check input box ${keyStoreValue}`);
+    if (keyStoreValue) {
+      $.ajax({
+        url: `/api/certificates/${keyStoreValue}`, // Endpoint to fetch certificate options
+        method: 'GET',
+        success: function (data) {
+          // Populate the dropdown with new options
+          data.forEach(cert => {
+            signingCertificateDropdown.append(
+                    `<option value="${cert.certificateActualName}">${cert.alias}</option>`
+            );
+          });
+        },
+        error: function (err) {
+          console.error('Error fetching certificates:', err);
+        }
+      });
+    }
+  }
+  function setPassword(password)
+  {
+    const hiddenField = document.getElementById("passwordField");
+    hiddenField.value = password;
+  }
+</script>
 </body>
 </html>

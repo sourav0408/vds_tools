@@ -1,58 +1,52 @@
 package com.example.vds_tools.controller;
-
+import com.example.vds_tools.model.Aliases;
 import com.google.zxing.BarcodeFormat;
-
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;
 import com.google.zxing.datamatrix.DataMatrixWriter;
-import com.example.vds_tools.model.VdsFormModel;
 import de.tsenger.vdstools.DataEncoder;
 import de.tsenger.vdstools.Signer;
-
 import de.tsenger.vdstools.vds.DigitalSeal;
 import de.tsenger.vdstools.vds.VdsHeader;
 import de.tsenger.vdstools.vds.VdsMessage;
+import jakarta.servlet.http.HttpSession;
 import lombok.Data;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.ResponseEntity;
-
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.nio.file.Path;
-import java.security.KeyStore;
-import java.security.PrivateKey;
+import java.security.*;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.time.LocalDate;
-import java.util.Base64;
-import java.util.Enumeration;
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.bouncycastle.cms.RecipientId.password;
+import java.util.*;
 
 @Controller
 public class VdsController {
 
-    @GetMapping("/vds")// This maps the form to the /show-form URL
-    public String showForm() {
-        //model.addAttribute("VdsFormModel", new VdsFormModel()); // Add an empty form model
-        return "vdsForm";
+
+    private HttpSession session;
+
+    @GetMapping("/vds") // This maps the form to the /vds URL
+    public String showForm(Model model)  {
+        // Return the view (Thymeleaf template)
+        return "vdsForm";  // Ensure this matches your actual Thymeleaf template name
     }
+
 
     @PostMapping("/process-form")
     public ResponseEntity<?> processForm(@RequestBody FormData formData) {
 
 
 
-        System.out.println("hello" + formData);
+        System.out.println("Form Data" + formData);
 
         String firstName=formData.getFirstName() ;
         String signingCertificate=formData.getSigningCertificate();
@@ -67,16 +61,13 @@ public class VdsController {
         String certificateReference=formData.getCertificateReference() ;
         String issuingDate=formData.getIssuingDate() ;
         String sigDate=formData.getSigDate() ;
+        String keyStoreIdentifier=formData.getKeyStoreIdentifier() ;
+        String storedPassword=formData.getStoredPassword() ;
 
         byte[] qr=generateDigitalSeal(firstName,cgpa,signingCertificate,
                 university,division,id,vdsType,issuingCountry,
-                signerIdentifier,certificateReference,issuingDate,sigDate);
+                signerIdentifier,certificateReference,issuingDate,sigDate,storedPassword,keyStoreIdentifier);
 
-        // System.out.println("SOURAV"+qr);
-
-
-        // Simulate processing the data
-        //"Processed: " + formData.getField1() + " & " + formData.getField2();
         String base64QRCode = Base64.getEncoder().encodeToString(qr);
         String processedResult = base64QRCode;
 
@@ -132,7 +123,9 @@ public class VdsController {
             String signerIdentifier_,
             String certificateReference_,
             String issuingDate_,
-            String sigDate_ ) {
+            String sigDate_,
+            String storedPassword_,
+            String keyStoreIdentifier_) {
 
         byte[] qrBytes = null;
         HttpHeaders headers = null;
@@ -140,51 +133,47 @@ public class VdsController {
             String password_ = "bccca";
 
 
-            //String fileId= "1vsB9rL16wRSCPw3t2iIo98tawqzbFtzH";
-            /*String fileId="19AwvADPbXw8Lx5cK7rmKg3vQmNN3Gdhw";
+            if(keyStoreIdentifier_.equals("WINDOWS"))
+            {
+                KeyStore keystore = KeyStore.getInstance("Windows-MY", "SunMSCAPI");
+                keystore.load(null, null);
+                String alias =signingCertificate_;
+                System.out.println("Alias: " + alias);
+                X509Certificate cert = (X509Certificate) keystore.getCertificate(alias);
+                System.out.println("Certificate in windows key trore: " + cert);
+            } else if (keyStoreIdentifier_.equals("DONGLE")) {
 
-            String fileUrl = "https://drive.google.com/uc?id=" + fileId + "&export=download";
-            String tinyUrl = createTinyURL(fileUrl);
+                ClassPathResource resource = new ClassPathResource("pkcs11.cfg");
+                File configFile = resource.getFile();
+                String configPath = configFile.getAbsolutePath();
 
-            System.out.println("Original URL: " + fileUrl);
-            System.out.println("Tiny URL: " + tinyUrl);*/
+                Provider pkcs11Provider = Security.getProvider("SunPKCS11");
+                pkcs11Provider = pkcs11Provider.configure(configPath);
+                Security.addProvider(pkcs11Provider);
 
+                // Access the key store
+                KeyStore keyStore = KeyStore.getInstance("PKCS11", pkcs11Provider);
+                //String pin = "Snlrmr199257#"; // Replace with your actual PIN
 
-            // Open a connection to the URL
-            //URL url = new URL(tinyUrl);
+                //String pin = (String) session.getAttribute("pin"); // Retrieve the 'pin' value
+               // System.out.println("Retrieved PIN: " + pin);
 
-         String urL;
-            if(signingCertificate_.equals("UTTS5B")){
-
-                urL="https://tinyurl.com/29uya6wk";
-            } else if (signingCertificate_.equals("UTTS5C")) {
-                urL="https://tinyurl.com/29uya6wk";
-            }
-
-            else {
-                // Provide a default initialization
-                throw new IllegalArgumentException("Invalid signingCertificate_: " + signingCertificate_);
-            }
-            URL url = new URL(urL);
-
-            //FileInputStream fis = new FileInputStream("");
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-
-            // Set the necessary headers if needed
-            connection.setRequestProperty("User-Agent", "Mozilla/5.0");
-            InputStream fis = connection.getInputStream();
-            KeyStore keyStore = KeyStore.getInstance("PKCS12");
-            keyStore.load(fis, password_.toCharArray());
-            Enumeration<String> aliases = keyStore.aliases();
-
-
-
-            while (aliases.hasMoreElements()) {
-                String alias = aliases.nextElement();
+                String pin=storedPassword_;
+                keyStore.load(null, pin.toCharArray());
+                String alias =signingCertificate_;
+                //System.out.println("Alias: " + alias);
                 X509Certificate cert = (X509Certificate) keyStore.getCertificate(alias);
-                PrivateKey key = (PrivateKey) keyStore.getKey(alias, password_.toCharArray());
+               // System.out.println("Certificate in dongle: " + cert);
+            }
 
+
+            KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance("RSA");
+            keyPairGen.initialize(2048);
+            KeyPair keyPair = keyPairGen.generateKeyPair();
+            PrivateKey key = keyPair.getPrivate();
+            System.out.println("Private Key: " + key);
+
+                Signer signer = new Signer(key);
                 // Create VDS Header and Message
                 VdsHeader header = new VdsHeader.Builder(vdsType_)
                         .setIssuingCountry(issuingCountry_)
@@ -195,8 +184,7 @@ public class VdsController {
                         .build();
                 String firstName = firstName_;
                 String cgpa = cgpa_;
-                String link = "https://tinyurl.com/f475a4x4";
-               // String link ="https://tinyurl.com/2akr5d5s";
+            String link="https://tinyurl.com/23vjc5fn";
                 String university = university_;
                 String division = division_;
                 String id = id_;
@@ -214,7 +202,7 @@ public class VdsController {
                 DigitalSeal digitalSeal = new DigitalSeal(header, vdsMessage, new Signer(key));
                 byte[] encodedBytes = digitalSeal.getEncoded();
 
-                System.out.println("Encoded Byte: " + encodedBytes);
+                //System.out.println("Encoded Byte: " + encodedBytes);
                 // Generate the barcode (Data Matrix)
                 DataMatrixWriter dmw = new DataMatrixWriter();
                 BitMatrix bitMatrix = dmw.encode(DataEncoder.encodeBase256(digitalSeal.getEncoded()), BarcodeFormat.DATA_MATRIX,
@@ -225,15 +213,16 @@ public class VdsController {
                 MatrixToImageWriter.writeToStream(bitMatrix, "PNG", outputStream);
                 qrBytes = outputStream.toByteArray();
 
+
                 //headers = new HttpHeaders();
                 // headers.set("Content-Type", "image/png");
 
 
-                Path path = Path.of("D:\\D\\all_project\\VDS\\Certificate\\test.png");
-                MatrixToImageWriter.writeToPath(bitMatrix, "PNG", path);
+               // Path path = Path.of("D:\\D\\all_project\\VDS\\Certificate\\test.png");
+                //MatrixToImageWriter.writeToPath(bitMatrix, "PNG", path);
 
 
-            }
+          //  }
 
 
         } catch (Exception e) {
@@ -243,12 +232,101 @@ public class VdsController {
     }
 
 
+   /* public static InputStream  getCertificateInputStream(String alias) throws Exception {
+
+        Security.addProvider(new BouncyCastleProvider());
+
+        // Load the Windows KeyStore (Windows-MY)
+        KeyStore windowsKeystore = KeyStore.getInstance("Windows-MY", "SunMSCAPI");
+        windowsKeystore.load(null, null);  // Load the keystore
+
+        // Print out all aliases in the keystore
+        Enumeration<String> aliases = windowsKeystore.aliases();
+        while (aliases.hasMoreElements()) {
+            String aliasInKeystore = aliases.nextElement();
+            System.out.println("Alias in Keystore: " + aliasInKeystore);
+        }
+        char[] password = "bcca".toCharArray();  // Replace with the actual password
+        PrivateKey privateKey = (PrivateKey) windowsKeystore.getKey(alias, password);
+        // Check for the alias and get the certificate
+        InputStream certStream = null;
+        if (windowsKeystore.containsAlias(alias)) {
+            Certificate certificate = windowsKeystore.getCertificate(alias);
+            if (certificate != null) {
+                System.out.println("Certificate found for alias: " + alias);
+                byte[] certificateBytes = certificate.getEncoded();
+                certStream = new ByteArrayInputStream(certificateBytes);
+                System.out.println("Certificate InputStream is available.");
+            } else {
+                System.out.println("No certificate found for alias: " + alias);
+            }
+        } else {
+            System.out.println("No alias found: " + alias);
+        }
+        return certStream;
+    }*/
+
+  public void generateCertificate( String alias1)
+  {
+      try {
+          // Add BouncyCastle provider for PKCS12
+          Security.addProvider(new BouncyCastleProvider());
+
+          // Load the Windows KeyStore
+          KeyStore windowsKeystore = KeyStore.getInstance("Windows-MY", "SunMSCAPI");
+          windowsKeystore.load(null, null);
+
+          // Enumerate through the aliases in the Windows KeyStore
+          Enumeration<String> aliases = windowsKeystore.aliases();
+          while (aliases.hasMoreElements()) {
+              String alias = aliases.nextElement();
+              System.out.println("Alias in Keystore: " + alias);
+
+
+              String aliaS = alias1;
+              String outputFilePath = "src/main/resources/certificates/ahad_cert.p12";
+              char[] pfxPassword = "bccca".toCharArray();
+
+
+              if (aliaS.equals(alias)) {
+                  System.out.println("Exporting certificate with alias: " + alias);
+
+                  if (windowsKeystore.isKeyEntry(alias)) {
+                      // Retrieve the private key and certificate chain
+                      PrivateKey privateKey = (PrivateKey) windowsKeystore.getKey(alias, null);
+                      Certificate[] certChain = windowsKeystore.getCertificateChain(alias);
+                      System.out.println("Certificate chain length: " + certChain.length);
+
+                      if (privateKey == null || certChain == null) {
+                          System.out.println("No private key or certificate chain found for alias: " + alias);
+                          return;
+                      }
+
+                      KeyStore pfxKeystore = KeyStore.getInstance("PKCS12", "BC");
+
+                      pfxKeystore.load(null, null);
+
+                      try  (FileOutputStream fos = new FileOutputStream(outputFilePath))
+                      {
+                          pfxKeystore.store(fos, pfxPassword);
+                      }
+                      catch (Exception e)
+                      {
+                          e.printStackTrace();
+                      }
+
+                      break;
+                  }
+              }
+          }
+      } catch (Exception e) {
+          e.printStackTrace();
+      }
+  }
+
     // Helper class for form data
     @Data
     static class FormData {
-        //private String field1;
-        //private String field2;
-
 
         private String firstName ;
         private String cgpa ;
@@ -256,32 +334,20 @@ public class VdsController {
         private String division ;
         private String id ;
         private String signingCertificate;
-
         private String vdsType;
         private String issuingCountry;
         private String signerIdentifier;
         private String certificateReference;
         private String issuingDate;
         private String sigDate;
+        private String keyStoreIdentifier;
+        private String storedPassword;
 
-   /*     // Getters and setters
-        public String getField1() {
-            return field1;
-        }
-
-        public void setField1(String field1) {
-            this.field1 = field1;
-        }
-
-        public String getField2() {
-            return field2;
-        }
-
-        public void setField2(String field2) {
-            this.field2 = field2;
-        }*/
     }
-    public static String createTinyURL(String originalUrl) throws IOException {
+
+
+//tiny url
+/*    public static String createTinyURL(String originalUrl) throws IOException {
         String tinyURLAPI = "http://tinyurl.com/api-create.php?url=";
         // Encode the original URL to handle special characters
         String encodedUrl = URLEncoder.encode(originalUrl, "UTF-8");
@@ -299,5 +365,5 @@ public class VdsController {
 
         reader.close();
         return tinyUrl; // Return the shortened Tiny URL
-    }
+    }*/
 }
