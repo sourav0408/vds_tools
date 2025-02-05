@@ -41,16 +41,18 @@ public class CertificateController {
 
 
         certificates.clear();
+        System.out.println("Hello man:"+keyStoreIdentifier);
         if ("WINDOWS".equalsIgnoreCase(keyStoreIdentifier)) {
            getWindowsKeystoreAliases();
         } else if ("DONGLE".equalsIgnoreCase(keyStoreIdentifier)) {
             getDongleKeystoreAliases();
         }
-
+//System.out.println("Certificate" + certificates);
         return ResponseEntity.ok(certificates);
     }
 
     public void getWindowsKeystoreAliases() throws KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException {
+
         KeyStore keyStore = KeyStore.getInstance("Windows-MY");
 
         // Load the keystore from the default Windows keystore (does not require a password)
@@ -65,6 +67,7 @@ public class CertificateController {
         // Iterate through and check validity of each alias
         while (aliases.hasMoreElements()) {
             String alias = aliases.nextElement();
+            System.out.println("alias check for windows:"+alias);
 
             // Retrieve the certificate associated with the alias
             X509Certificate cert = (X509Certificate) keyStore.getCertificate(alias);
@@ -72,7 +75,7 @@ public class CertificateController {
                 // Get the expiration date (notAfter) and validity period (notBefore, notAfter)
                 Date expirationDate = cert.getNotAfter();
                 Date startDate = cert.getNotBefore();
-                System.out.println("Certificate name : "+alias+ " ----start date: " +startDate+ " ----end date: "+expirationDate);
+                System.out.println("Certificate name Windows : "+alias+ " ----start date: " +startDate+ " ----end date: "+expirationDate);
                 // Check if the certificate is valid (current date is within the valid range)
                 boolean isValid = currentDate.after(startDate) && currentDate.before(expirationDate);
 

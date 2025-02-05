@@ -322,14 +322,18 @@
         const signingCertificateDropdown = $('#signingCertificate');
 
         // Clear the Signing Certificate dropdown
+       // alert("hello");
         signingCertificateDropdown.empty();
         signingCertificateDropdown.append('<option selected disabled>Choose Signing Certificate</option>');
-        if(keyStoreValue==='WINDOWS')
+        //if(keyStoreValue==='WINDOWS'){
         if (keyStoreValue) {
+
           $.ajax({
             url: `/api/certificates/${keyStoreValue}`, // Endpoint to fetch certificate options
             method: 'GET',
             success: function (data) {
+             // alert($cert.alias);
+              alert("Received Data: " + JSON.stringify(data));
               // Populate the dropdown with new options
               data.forEach(cert => {
                 signingCertificateDropdown.append(
@@ -341,7 +345,7 @@
               console.error('Error fetching certificates:', err);
             }
           });
-        }
+        }//}
       });
     });
 
@@ -423,7 +427,7 @@
 
     signingCertificateDropdown.empty();
     signingCertificateDropdown.append('<option selected disabled>Choose Signing Certificate</option>');
-    //alert(`Check input box ${keyStoreValue}`);
+    alert(`Check input box ${keyStoreValue}`);
     if (keyStoreValue) {
       $.ajax({
         url: `/api/certificates/${keyStoreValue}`, // Endpoint to fetch certificate options
