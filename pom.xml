@@ -16,6 +16,8 @@
 	<properties>
 		<java.version>21</java.version>
 	</properties>
+
+
 	<dependencies>
 		<!-- Spring Boot Starters -->
 		<dependency>
@@ -42,6 +44,14 @@
 			<scope>test</scope>
 		</dependency>
 
+		<dependency>
+			<groupId>de.tsenger</groupId>
+			<artifactId>vdstools</artifactId>
+			<version>1.0</version>
+			<scope>system</scope>
+			<systemPath>${project.basedir}/src/main/resources/lib/vdstools.jar</systemPath>
+		</dependency>
+
 		<!-- Lombok -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
@@ -49,6 +59,8 @@
 			<version>1.18.34</version>
 			<scope>provided</scope>
 		</dependency>
+
+
 
 		<!-- ZXing -->
 		<dependency>
@@ -63,11 +75,7 @@
 		</dependency>
 
 		<!-- iText PDF -->
-		<dependency>
-			<groupId>com.itextpdf</groupId>
-			<artifactId>kernel</artifactId>
-			<version>7.2.3</version>
-		</dependency>
+
 		<dependency>
 			<groupId>com.itextpdf</groupId>
 			<artifactId>layout</artifactId>
