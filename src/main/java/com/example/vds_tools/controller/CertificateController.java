@@ -34,7 +34,6 @@ public class CertificateController {
     private HttpSession session;
 
     List<CertificateDTO> certificates = new ArrayList<>();
-    List<CertificateDTO> actualAliases=new ArrayList<>();
     @GetMapping("/{keyStoreIdentifier}")
     public ResponseEntity<List<CertificateDTO>> getCertificates(@PathVariable String keyStoreIdentifier) throws CertificateException, KeyStoreException, IOException, NoSuchAlgorithmException {
         // Replace this with your actual logic to fetch certificates

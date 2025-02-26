@@ -5,7 +5,10 @@ import lombok.Data;
 @Data
 public class Aliases {
     private String alias;
-    public Aliases(String alias) {
+    private String certificateActualName;
+
+    public Aliases(String alias, String certificateActualName) {
         this.alias = alias;
+        this.certificateActualName = certificateActualName;
     }
 }

@@ -9,6 +9,7 @@ import de.tsenger.vdstools.Signer;
 import de.tsenger.vdstools.vds.DigitalSeal;
 import de.tsenger.vdstools.vds.VdsHeader;
 import de.tsenger.vdstools.vds.VdsMessage;
+import de.tsenger.vdstools.vds.VdsSignature;
 import jakarta.servlet.http.HttpSession;
 import lombok.Data;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -25,6 +26,7 @@ import java.security.*;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.security.spec.PKCS8EncodedKeySpec;
 import java.time.LocalDate;
 import java.util.*;
 
@@ -133,11 +135,11 @@ public class VdsController {
             String password_ = "bccca";
 
 
-            if(keyStoreIdentifier_.equals("WINDOWS"))
-            {
+            PrivateKey privateKey = null;
+            if (keyStoreIdentifier_.equals("WINDOWS")) {
                 KeyStore keystore = KeyStore.getInstance("Windows-MY", "SunMSCAPI");
                 keystore.load(null, null);
-                String alias =signingCertificate_;
+                String alias = signingCertificate_;
                 System.out.println("Alias: " + alias);
                 X509Certificate cert = (X509Certificate) keystore.getCertificate(alias);
                 System.out.println("Certificate in windows key trore: " + cert);
@@ -156,14 +158,15 @@ public class VdsController {
                 //String pin = "Snlrmr199257#"; // Replace with your actual PIN
 
                 //String pin = (String) session.getAttribute("pin"); // Retrieve the 'pin' value
-               // System.out.println("Retrieved PIN: " + pin);
+                // System.out.println("Retrieved PIN: " + pin);
 
-                String pin=storedPassword_;
+                String pin = storedPassword_;
                 keyStore.load(null, pin.toCharArray());
-                String alias =signingCertificate_;
+                String alias = signingCertificate_;
                 //System.out.println("Alias: " + alias);
                 X509Certificate cert = (X509Certificate) keyStore.getCertificate(alias);
-               // System.out.println("Certificate in dongle: " + cert);
+                // System.out.println("Certificate in dongle: " + cert);
+                privateKey = (PrivateKey) keyStore.getKey(alias, pin.toCharArray());
             }
 
 
@@ -173,56 +176,64 @@ public class VdsController {
             PrivateKey key = keyPair.getPrivate();
             System.out.println("Private Key: " + key);
 
-                Signer signer = new Signer(key);
-                // Create VDS Header and Message
-                VdsHeader header = new VdsHeader.Builder(vdsType_)
-                        .setIssuingCountry(issuingCountry_)
-                        .setSignerIdentifier(signerIdentifier_)
-                        .setCertificateReference(certificateReference_)
-                        .setIssuingDate(LocalDate.parse(issuingDate_))
-                        .setSigDate(LocalDate.parse(sigDate_))
-                        .build();
-                String firstName = firstName_;
-                String cgpa = cgpa_;
-            String link="https://tinyurl.com/23vjc5fn";
-                String university = university_;
-                String division = division_;
-                String id = id_;
-                //String department = "CSE";
-                VdsMessage vdsMessage = new VdsMessage.Builder(header.getVdsType())
-                        .addDocumentFeature("FIRST_NAME", firstName)
-                        .addDocumentFeature("CGPA", cgpa)
-                        .addDocumentFeature("LINK", link)
-                        .addDocumentFeature("University", university)
-                        .addDocumentFeature("Division", division)
-                        .addDocumentFeature("StudentID", id)
-                        .build();
+           /* KeyStore keystore = KeyStore.getInstance("Windows-MY", "SunMSCAPI");
+            keystore.load(null, null);
 
-                // Create Digital Seal
-                DigitalSeal digitalSeal = new DigitalSeal(header, vdsMessage, new Signer(key));
-                byte[] encodedBytes = digitalSeal.getEncoded();
-
-                //System.out.println("Encoded Byte: " + encodedBytes);
-                // Generate the barcode (Data Matrix)
-                DataMatrixWriter dmw = new DataMatrixWriter();
-                BitMatrix bitMatrix = dmw.encode(DataEncoder.encodeBase256(digitalSeal.getEncoded()), BarcodeFormat.DATA_MATRIX,
-                        450, 450);
+            key= (PrivateKey) keystore.getKey("MD.SOURAV HOSSEN", null);*/
 
 
-                ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-                MatrixToImageWriter.writeToStream(bitMatrix, "PNG", outputStream);
-                qrBytes = outputStream.toByteArray();
+            Signer signer = new Signer(key);
+            System.out.println("Signer: " + signer);
+            // Create VDS Header and Message
+            VdsHeader header = new VdsHeader.Builder(vdsType_)
+                    .setIssuingCountry(issuingCountry_)
+                    .setSignerIdentifier(signerIdentifier_)
+                    .setCertificateReference(certificateReference_)
+                    .setIssuingDate(LocalDate.parse(issuingDate_))
+                    .setSigDate(LocalDate.parse(sigDate_))
+                    .build();
+            String firstName = firstName_;
+            String cgpa = cgpa_;
+            String link = "https://tinyurl.com/23vjc5fn";
+            String university = university_;
+            String division = division_;
+            String id = id_;
+            //String department = "CSE";
+            VdsMessage vdsMessage = new VdsMessage.Builder(header.getVdsType())
+                    .addDocumentFeature("FIRST_NAME", firstName)
+                    .addDocumentFeature("CGPA", cgpa)
+                    .addDocumentFeature("LINK", link)
+                    .addDocumentFeature("University", university)
+                    .addDocumentFeature("Division", division)
+                    .addDocumentFeature("StudentID", id)
+                    .build();
+
+            // String data =Base64.getEncoder().encodeToString(signedData);
+
+            String privateKeyBase64 = "MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCLS38rF0NtDTEgqN+rby+Qj19UlFUNMunsOfrqneVKaMrBIjVsdUvwxnWFroXRj63zpny0mYlqASyWGvJqIDXPnH974YCEm4OXnxuDSM1S+1mPJ/sVx8Vhlb90BaYbZOVX6yOySuaDTSGC09MYRQcgh4ItPrGchUB/tweagjjphmhJkhuX8LlRhWczwxhbJZbDFSZPRlpRx6GtdZ5b9r1PTYAI52PPBKD4r++Bqx9WYRSvtNb5ATChqErt30MrlrIQEOI5Ye12wZAnO0gvGggSzXnGbIDXGfPIjkIEhsgjjp49/m1Qbx91Svw900hW+5NT3SSg850+8dAu+vtJmBAhAgMBAAECggEAD5k9vWqWf2DJzpl6qq0By5NynnsZ5yd7cJuxkJJr+eAwTF5zUxjzjxv6TyUTETugxDcxodvLupY1Ev4jhWTkAcLJt+qxxKfRnaoQn6wIajGBfvmAMZk0blAhp3F2f3zV/flz/uRKWgvKI+dqrT4VpTvnhP+PTjLR3Tt224OXsfbTMGW505ZzoYzsKHCTA9n51EvrqoickKPdH0xzeTngBg9p0rEum5OAc+qKC+koDUctKWBWQTp9dzWWWAbRfVa/Oy/QTQr+d6OKvCtwfA5HLCOCrQjmaGQD8viae7Ap313Q19eE+OWrjzRzcS8NleoHDnLhN6C1lAxQzBCGmdrubQKBgQDjm4usfe4/ha3UcTfG9/wkY1FoR9RiOb24oCxtnBWH8Yc7TonKfBpngMhVkC5rYUY05GUaaQkGU6Dm6y0R7Zc6GB7ITG8dziYXY4cd3TRFgmZmyBw6aXEs39rN2BSX9JPpNOaQGeKRccwUJ7TWax/rcenwnKvyzFJRuOTaqV6VTwKBgQCcq8LBPPOtmJ2k67/VpUOMvEfgi+r4yGNJZASM4m+NwoiixDyx0c/1DMgsgJn4anm0EU1yfOXT8nYfRXRu1qs1WJFSOvgzOZyt+EPbXUcA4kg1wHt6iDmGqBR65Ux+9rmt92U0TJtmCweoKQH9PeEiIL12IrMhZ3/Tj3gobRqHjwKBgBPrwUXPn9KfeJ9naWJYwhDNQIrH/qa6Nwi5vCm7x4amdReTwCugwQ7eDqque+GaGfL3KoItP0T2fNa5LrCrAtlq0wbk6bTKHjtd0q2idri+uQe17AKQx/8NeLEbgHHsTiXTI3rpSRNByoLZFtLNfXW1+qu8irAtgeb1L9KTkFuxAoGBAIlNcind3ASoOogdX4rCAhglraxZkvyiyXi5Ic/CZldLRGm5JyQDp4evwwJVVhrCXZR0kXYjhVuhIuo2+Vpl4benvfvd2EU0WV6RtA5ciex5YyVQYia5mgir5v7pU4f1fDa9GMGj3ZCpW/WAstCYWWSKYuBUer5ssTbchkaPj297AoGAMxAbhmZJd8ykb+2PKlVIFXC7yzuK2D8+uW0vODtM96rupGvfTknAF3l+hHq61muALlp3jbQEbxvuHbm1x7veryEyr1Kx3Fj6eMzotnMrifAMOZROhaJ7xK/eH8XyzMe+1Gha3TyU9iyDkvgoQFQECzL1QeNPFwNNtUlZy0ArJyQ=";
+            // Decode the Base64 string into a byte array
+            byte[] decodedPrivateKey = Base64.getDecoder().decode(privateKeyBase64);
+            // Convert the byte array into a PrivateKey object using PKCS8EncodedKeySpec
+            PKCS8EncodedKeySpec keySpec = new PKCS8EncodedKeySpec(decodedPrivateKey);
+            KeyFactory keyFactory = KeyFactory.getInstance("RSA");
+            PrivateKey privateKey2 = keyFactory.generatePrivate(keySpec);
+
+                    // Create Digital Seal
+            DigitalSeal digitalSeal = new DigitalSeal(header, vdsMessage, new Signer(privateKey2));
+
+            byte[] encodedBytes = digitalSeal.getEncoded();
+
+            //System.out.println("Encoded Byte: " + encodedBytes);
+            // Generate the barcode (Data Matrix)
+            DataMatrixWriter dmw = new DataMatrixWriter();
+            BitMatrix bitMatrix = dmw.encode(DataEncoder.encodeBase256(digitalSeal.getEncoded()), BarcodeFormat.DATA_MATRIX,
+                    450, 450);
 
 
-                //headers = new HttpHeaders();
-                // headers.set("Content-Type", "image/png");
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            MatrixToImageWriter.writeToStream(bitMatrix, "PNG", outputStream);
+            qrBytes = outputStream.toByteArray();
 
-
-               // Path path = Path.of("D:\\D\\all_project\\VDS\\Certificate\\test.png");
-                //MatrixToImageWriter.writeToPath(bitMatrix, "PNG", path);
-
-
-          //  }
 
 
         } catch (Exception e) {
