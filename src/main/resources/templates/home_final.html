@@ -766,8 +766,6 @@
         data: JSON.stringify(formData),
         success: function (response) {
           $('#qrString').text(response.message);
-          alert(response.message);
-          alert(response.qrCode);
 
           if (response.qrCode) {
             const qrImageSrc = "data:image/png;base64," + response.qrCode;
