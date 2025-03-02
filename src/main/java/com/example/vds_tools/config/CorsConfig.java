@@ -1,3 +1,4 @@
+/*
 package com.example.vds_tools.config;
 
 import org.springframework.context.annotation.Bean;
@@ -12,8 +13,8 @@ public class CorsConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-                registry.addMapping("/**")
-                        .allowedOrigins("https://visual-digital-sign.onrender.com") // Allow frontend URL
+                registry.addMapping("/*")
+                        .allowedOrigins("*") // Allow frontend URL
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);
@@ -21,3 +22,4 @@ public class CorsConfig {
         };
     }
 }
+*/

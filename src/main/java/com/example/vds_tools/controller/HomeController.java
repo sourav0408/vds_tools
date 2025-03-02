@@ -37,7 +37,7 @@ public class HomeController {
     @Autowired
     private WindowsPrivateKeyService privateKeyService;
 
-    @GetMapping("/") // This maps the form to the /vds URL
+    @GetMapping("/vdss") // This maps the form to the /vds URL
     public String showForm(Model model)  {
         // Return the view (Thymeleaf template)
         return "homePage";  // Ensure this matches your actual Thymeleaf template name
